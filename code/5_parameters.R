@@ -6,7 +6,9 @@ rm(list=ls())
 library(rstan)
 
 #load fit object
-load(file="data/derived/fit_vtf.RData")
+load(file="data/derived/fit_vtfB_gaba.RData")
+
+traceplot(fit,pars='COEFS_sham_B')
 
 #coefficients
 #1) intercept

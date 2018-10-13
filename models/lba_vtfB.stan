@@ -260,6 +260,8 @@ transformed parameters {
      vector[Nsubj] dB_anodal_mean;
      vector[Nsubj] dB_cathodal_mean;
      vector[Nsubj] dB_sham_mean;
+     vector[Ntotal] dB;
+     real min_B;
      vector[Ntotal] v_false;
      vector[Ntotal] v_true;
      vector[Ntotal] B;
@@ -299,10 +301,15 @@ transformed parameters {
         dvf_sham[subject] .* dpost_sham;
 
     //calculate B
-    B = B_pre[subject] +
-        dB_anodal[subject] .* dpost_anodal +
+    dB = dB_anodal[subject] .* dpost_anodal +
         dB_cathodal[subject] .* dpost_cathodal +
         dB_sham[subject] .* dpost_sham;
+
+     dB_min = fmin(dB); //calculates lowest change value
+
+     B = B_pre[subject] - dB_min + dB; //actual B_pre = B_pre - min; function is "pushed up" so threshold must be positive
+
+
 
 
 //
