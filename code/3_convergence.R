@@ -14,6 +14,21 @@ fit
 
 traceplot(fit)
 
+samples = extract(fit)
+
+iter = 1
+
+dB = samples$dB[1,]
+
+dB_min = samples$dB_min[1]
+
+pre_B = samples$B_pre[1,]
+
+actual_pre_B = pre_B - dB_min
+
+post_B = actual_pre_B + dB
+
+
 #coefficients
 #1) intercept
 #2) gender (1 = female, -1 = male)
