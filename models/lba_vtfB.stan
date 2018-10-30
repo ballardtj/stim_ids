@@ -328,15 +328,15 @@ model {
      v_false_pre_mean ~ normal(1,2); //v_false_pre_sd ~ uniform(0,1)
      //v_false_mean ~ normal(1,2); //v_false_sd ~ uniform(0,1)
      //tau_mean ~ uniform(0.1,1); tau_sd ~ uniform(0,1)
-     COEFS_anodal_v_true ~ normal(0,2);
-     COEFS_cathodal_v_true ~ normal(0,2);
-     COEFS_sham_v_true ~ normal(0,2);
-     COEFS_anodal_v_false ~ normal(0,2);
-     COEFS_cathodal_v_false ~ normal(0,2);
-     COEFS_sham_v_false ~ normal(0,2);
-     COEFS_anodal_B ~ normal(0,2);
-     COEFS_cathodal_B ~ normal(0,2);
-     COEFS_sham_B ~ normal(0,2);
+     COEFS_anodal_v_true ~ normal(0,1);
+     COEFS_cathodal_v_true ~ normal(0,1);
+     COEFS_sham_v_true ~ normal(0,1);
+     COEFS_anodal_v_false ~ normal(0,1);
+     COEFS_cathodal_v_false ~ normal(0,1);
+     COEFS_sham_v_false ~ normal(0,1);
+     COEFS_anodal_B ~ normal(0,1);
+     COEFS_cathodal_B ~ normal(0,1);
+     COEFS_sham_B ~ normal(0,1);
 
      //priors
      A_raw ~ normal(0,1);
