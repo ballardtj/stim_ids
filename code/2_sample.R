@@ -9,7 +9,7 @@ library(rstan)
 load(file="data/clean/stan_list.RData")
 
 #sample
-fit=stan(file="models/lba_vtf.stan",
+fit=stan(file="models/lba_vtfB.stan",
      data=stan_list,
      pars=c('v_true','v_false','B'),
      include=F,

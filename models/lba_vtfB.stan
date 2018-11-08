@@ -261,7 +261,7 @@ transformed parameters {
      vector[Nsubj] dB_cathodal_mean;
      vector[Nsubj] dB_sham_mean;
      vector[Ntotal] dB;
-     real min_B;
+     real dB_min;
      vector[Ntotal] v_false;
      vector[Ntotal] v_true;
      vector[Ntotal] B;
@@ -305,7 +305,7 @@ transformed parameters {
         dB_cathodal[subject] .* dpost_cathodal +
         dB_sham[subject] .* dpost_sham;
 
-     dB_min = fmin(dB); //calculates lowest change value
+     dB_min = min(dB); //calculates lowest change value
 
      B = B_pre[subject] - dB_min + dB; //actual B_pre = B_pre - min; function is "pushed up" so threshold must be positive
 
@@ -328,15 +328,24 @@ model {
      v_false_pre_mean ~ normal(1,2); //v_false_pre_sd ~ uniform(0,1)
      //v_false_mean ~ normal(1,2); //v_false_sd ~ uniform(0,1)
      //tau_mean ~ uniform(0.1,1); tau_sd ~ uniform(0,1)
-     COEFS_anodal_v_true ~ normal(0,1);
-     COEFS_cathodal_v_true ~ normal(0,1);
-     COEFS_sham_v_true ~ normal(0,1);
-     COEFS_anodal_v_false ~ normal(0,1);
-     COEFS_cathodal_v_false ~ normal(0,1);
-     COEFS_sham_v_false ~ normal(0,1);
-     COEFS_anodal_B ~ normal(0,1);
-     COEFS_cathodal_B ~ normal(0,1);
-     COEFS_sham_B ~ normal(0,1);
+     COEFS_anodal_v_true ~ normal(0,2);
+     COEFS_cathodal_v_true ~ normal(0,2);
+     COEFS_sham_v_true ~ normal(0,2);
+     COEFS_anodal_v_false ~ normal(0,2);
+     COEFS_cathodal_v_false ~ normal(0,2);
+     COEFS_sham_v_false ~ normal(0,2);
+     COEFS_anodal_B ~ normal(0,2);
+     COEFS_cathodal_B ~ normal(0,2);
+     COEFS_sham_B ~ normal(0,2);
+     dvt_anodal_sd ~ normal(0,1);
+     dvt_cathodal_sd ~ normal(0,1);
+     dvt_sham_sd ~ normal(0,1);
+     dvf_anodal_sd ~ normal(0,1);
+     dvf_cathodal_sd ~ normal(0,1);
+     dvf_sham_sd ~ normal(0,1);
+     dB_anodal_sd ~ normal(0,1);
+     dB_cathodal_sd ~ normal(0,1);
+     dB_sham_sd ~ normal(0,1);
 
      //priors
      A_raw ~ normal(0,1);
