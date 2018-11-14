@@ -88,6 +88,7 @@ save(imported_data,file="data/clean/imported_data.RData")
 #Trim to cut excluded subjects
 #subject exluded due to poor accuracy or issues with scans (unless otherwise states)
 trimmed_data_tmp = imported_data %>%
+  filter(subject < 6) %>%
   filter(subject!=4,
          subject!=5,
          subject!=12,
@@ -132,17 +133,27 @@ save(trimmed_data,file="data/clean/trimmed_data.RData")
 #   scale(trimmed_data$PFCGABA)*scale(trimmed_data$PFCGlutamate)
 # )
 
+ids = trimmed_data %>%
+  group_by(subject) %>%
+  summarise(gender = Gender[1],
+            age = Age[1],
+            taskpairing = taskpairing[1],
+            PFCgreymatter = PFCgreymatter[1],
+            PFCGABA = PFCGABA[1],
+            PFCGlutamate = PFCGlutamate[1],
+            PFCRatio = PFCRatio[1])
+
 COVS = cbind(
-  rep(1,nrow(individual_diffs)),
-  (individual_diffs$Gender==1) - (individual_diffs$Gender==2),
-  scale(individual_diffs$Age),  #standardised age
-  as.numeric(individual_diffs$taskpairing==2), #dummy variable representing if task pairing has value of 2
-  as.numeric(individual_diffs$taskpairing==3), #dummy variable representing if task pairing has value of 3
-  scale(individual_diffs$PFCgreymatter),
-  scale(individual_diffs$PFCGABA),
-  scale(individual_diffs$PFCGlutamate),
-  scale(individual_diffs$PFCRatio),
-  scale(individual_diffs$PFCGABA)*scale(individual_diffs$PFCGlutamate)
+  rep(1,length(unique(trimmed_data$subject))),
+  (ids$gender==1) - (ids$gender==2),
+  scale(ids$age),  #standardised age
+  as.numeric(ids$taskpairing==2), #dummy variable representing if task pairing has value of 2
+  as.numeric(ids$taskpairing==3), #dummy variable representing if task pairing has value of 3
+  scale(ids$PFCgreymatter),
+  scale(ids$PFCGABA),
+  scale(ids$PFCGlutamate),
+  scale(ids$PFCRatio),
+  scale(ids$PFCGABA)*scale(ids$PFCGlutamate)
 )
 
 stan_list = list(
