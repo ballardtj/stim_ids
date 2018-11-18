@@ -13,15 +13,15 @@ stan_list$COVS = stan_list$COVS[,1:7]
 stan_list$Nvars = stan_list$Nvars-3
 
 #sample
-fit=stan(file="models/lba_vtfB.stan",
+fit=stan(file="models/lba_vtfB_reciprocal.stan",
      data=stan_list,
      pars=c('v_true','v_false','B'),
      include=F,
      cores=4,
-     init_r = 1
+     init_r = 1,
      #control=list(init_r=1)#adapt_delta=0.99,max_treedepth=20)
-     #iter=10,
-     #chains=1
+     iter=10,
+     chains=1
      )
 
 save(fit,file="data/derived/test_fit_GABA.RData")
