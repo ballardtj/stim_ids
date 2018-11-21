@@ -88,7 +88,7 @@ save(imported_data,file="data/clean/imported_data.RData")
 #Trim to cut excluded subjects
 #subject exluded due to poor accuracy or issues with scans (unless otherwise states)
 trimmed_data_tmp = imported_data %>%
-  filter(subject < 6) %>%
+ # filter(subject < 6) %>%
   filter(subject!=4,
          subject!=5,
          subject!=12,

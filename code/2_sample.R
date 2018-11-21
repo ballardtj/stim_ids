@@ -17,14 +17,55 @@ fit=stan(file="models/lba_vtfB_reciprocal.stan",
      data=stan_list,
      pars=c('v_true','v_false','B'),
      include=F,
-     cores=4,
-     init_r = 1,
-     #control=list(init_r=1)#adapt_delta=0.99,max_treedepth=20)
-     iter=10,
-     chains=1
+     cores=7,
+     #init_r = 1,
+     control=list(max_treedepth=20),
+     #iter=10,
+     chains=7
      )
 
-save(fit,file="data/derived/test_fit_GABA.RData")
+save(fit,file="data/derived/fit_vtfB_gaba_reciprocal.RData")
+
+#Glut only
+load(file="data/clean/stan_list.RData")
+stan_list$COVS = stan_list$COVS[,c(1:6,8)]
+stan_list$Nvars = stan_list$Nvars-3
+
+#sample
+fit=stan(file="models/lba_vtfB_reciprocal.stan",
+         data=stan_list,
+         pars=c('v_true','v_false','B'),
+         include=F,
+         cores=7,
+         #init_r = 1,
+         control=list(max_treedepth=20),
+         #iter=10,
+         chains=7
+)
+
+save(fit,file="data/derived/fit_vtfB_glut_reciprocal.RData")
+
+#Ratio only
+load(file="data/clean/stan_list.RData")
+stan_list$COVS = stan_list$COVS[,c(1:6,9)]
+stan_list$Nvars = stan_list$Nvars-3
+
+#sample
+fit=stan(file="models/lba_vtfB_reciprocal.stan",
+         data=stan_list,
+         pars=c('v_true','v_false','B'),
+         include=F,
+         cores=7,
+         #init_r = 1,
+         control=list(max_treedepth=20),
+         #iter=10,
+         chains=7
+)
+
+save(fit,file="data/derived/fit_vtfB_ratio_reciprocal.RData")
+
+
+
 #Check whether model works with 10 iter
 
 #Run full analysis (2000 iter, 4 chains, 4 cores)
