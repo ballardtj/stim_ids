@@ -200,7 +200,7 @@ parameters {
     real<lower=0> B_pre_sd;
     //real<lower=0,upper=1> B_pre_sd;
     real<lower=0.1,upper=1> tau_mean;
-    real<lower=0> tau_sd;
+    real<lower=0,upper=1> tau_sd;
     //real<lower=0,upper=1> tau_sd;
     real v_false_pre_mean;
     real<lower=0> v_false_pre_sd;
@@ -383,7 +383,7 @@ model {
      B_pre_raw ~ normal(0,1);
      v_false_pre_raw ~ normal(0,1);
      v_true_pre_raw ~ normal(0,1);
-     tau_sd ~ normal(0,1);
+     //tau_sd ~ normal(0,1);
 
      for(subj in 1:Nsubj){
        tau[subj] ~ normal(tau_mean,tau_sd)T[0.1,1];

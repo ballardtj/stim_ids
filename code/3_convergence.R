@@ -5,10 +5,10 @@ rm(list=ls())
 #load packages
 library(rstan)
 
-##### GABA Model #####
+##### Ratio Model #####
 
 #load fit object
-load(file="data/derived/fit_vtfB_gaba.RData")
+load(file="data/derived/fit_vtfB_ratio_reciprocal.RData")
 
 fit
 
@@ -66,12 +66,13 @@ post_B = actual_pre_B + dB
 #9) PFC ratio
 #10) GABA X Glutamate interaction
 
+#extracting the samples
 samples = extract(fit)
 
 
-COEFS_anodal_diff = samples$COEFS_anodal_true - samples$COEFS_anodal_false
-COEFS_cathodal_diff = samples$COEFS_cathodal_true - samples$COEFS_cathodal_false
-COEFS_sham_diff = samples$COEFS_sham_true - samples$COEFS_sham_false
+COEFS_anodal_diff = samples$COEFS_anodal_v_diff
+COEFS_cathodal_diff = samples$COEFS_cathodal_v_diff
+COEFS_sham_diff = samples$COEFS_sham_v_diff
 
 #anodal
 cbind(apply(COEFS_anodal_diff,2,quantile,0.025),
