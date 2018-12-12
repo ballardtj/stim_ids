@@ -10,7 +10,9 @@ library(rstan)
 #load fit object
 load(file="data/derived/fit_vtfB_ratio_reciprocal.RData")
 
-fit
+smry=summary(fit)
+smry[[1]]
+smry[[1]][1:50,]
 
 #uniform priors on hyper sds
 
@@ -66,18 +68,24 @@ post_B = actual_pre_B + dB
 #9) PFC ratio
 #10) GABA X Glutamate interaction
 
-#extracting the samples
-samples = extract(fit)
+rownames = c('intercept','gender (1=f,-1=m)','age','task pairing 2','task pairing 3','PFC greymatter','ratio')
+colnames = c('lower CI','mean','upper CI')
 
+#extracting the samples
+library(knitr)
+samples = extract(fit)
 
 COEFS_anodal_diff = samples$COEFS_anodal_v_diff
 COEFS_cathodal_diff = samples$COEFS_cathodal_v_diff
 COEFS_sham_diff = samples$COEFS_sham_v_diff
 
 #anodal
-cbind(apply(COEFS_anodal_diff,2,quantile,0.025),
-      apply(COEFS_anodal_diff,2,mean),
-      apply(COEFS_anodal_diff,2,quantile,0.975))
+kable(
+  data.frame(lower=apply(COEFS_anodal_diff,2,quantile,0.025),
+             mean=apply(COEFS_anodal_diff,2,mean),
+             upper=apply(COEFS_anodal_diff,2,quantile,0.975),
+            row.names = names),
+      digits=3)
 
 #cathodal
 cbind(apply(COEFS_cathodal_diff,2,quantile,0.025),
@@ -98,6 +106,11 @@ cbind(apply(COEFS_anodal_diff - COEFS_sham_diff  ,2,quantile,0.025),
 cbind(apply(COEFS_cathodal_diff - COEFS_sham_diff  ,2,quantile,0.025),
       apply(COEFS_cathodal_diff - COEFS_sham_diff,2,mean),
       apply(COEFS_cathodal_diff - COEFS_sham_diff,2,quantile,0.975))
+
+
+
+
+
 
 #anodal v sham (diff)
 cbind(apply(samples$COEFS_anodal_true - samples$COEFS_sham_true  ,2,quantile,0.025),

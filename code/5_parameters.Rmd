@@ -1,0 +1,187 @@
+---
+title: "Summary of Regression Coefficients"
+author: "Tim Ballard"
+date: "12/5/2018"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+#load libraries
+library(rstan)
+library(knitr)
+
+#load fit object and extract samples
+load(file="../data/derived/fit_vtfB_ratio_reciprocal.RData")
+samples = extract(fit)
+
+names = c('intercept','gender (1=f,-1=m)','age','task pairing 2','task pairing 3','PFC greymatter','ratio')
+
+
+```
+
+# Change in DISCRIMINABILITY from pre to post
+
+Note: discriminability is calculated as the drift rate for the correct response minus the drift rate for the incorrect response.
+
+### ANODAL
+
+```{r echo=FALSE}
+
+
+COEFS_anodal_diff = samples$COEFS_anodal_v_diff
+COEFS_cathodal_diff = samples$COEFS_cathodal_v_diff
+COEFS_sham_diff = samples$COEFS_sham_v_diff
+
+#anodal
+kable(
+  data.frame(lower=apply(COEFS_anodal_diff,2,quantile,0.025),
+             mean=apply(COEFS_anodal_diff,2,mean),
+             upper=apply(COEFS_anodal_diff,2,quantile,0.975),
+            row.names = names),
+      digits=3)
+
+```
+
+### CATHODAL
+
+```{r echo=FALSE}
+
+#anodal
+kable(
+  data.frame(lower=apply(COEFS_cathodal_diff,2,quantile,0.025),
+             mean=apply(COEFS_cathodal_diff,2,mean),
+             upper=apply(COEFS_cathodal_diff,2,quantile,0.975),
+            row.names = names),
+      digits=3)
+
+```
+
+### SHAM
+
+```{r echo=FALSE}
+
+#anodal
+kable(
+  data.frame(lower=apply(COEFS_sham_diff,2,quantile,0.025),
+             mean=apply(COEFS_sham_diff,2,mean),
+             upper=apply(COEFS_sham_diff,2,quantile,0.975),
+            row.names = names),
+      digits=3)
+
+```
+
+
+### ANODAL VS SHAM
+
+```{r echo=FALSE}
+
+#anodal
+kable(
+  data.frame(lower=apply(COEFS_anodal_diff-COEFS_sham_diff,2,quantile,0.025),
+             mean=apply(COEFS_anodal_diff-COEFS_sham_diff,2,mean),
+             upper=apply(COEFS_anodal_diff-COEFS_sham_diff,2,quantile,0.975),
+            row.names = names),
+      digits=3)
+
+```
+
+
+### CATHODAL VS SHAM
+
+```{r echo=FALSE}
+
+#anodal
+kable(
+  data.frame(lower=apply(COEFS_cathodal_diff-COEFS_sham_diff,2,quantile,0.025),
+             mean=apply(COEFS_cathodal_diff-COEFS_sham_diff,2,mean),
+             upper=apply(COEFS_cathodal_diff-COEFS_sham_diff,2,quantile,0.975),
+            row.names = names),
+      digits=3)
+
+```
+
+
+# Change in THRESHOLD from pre to post
+
+Note: discriminability is calculated as the drift rate for the correct response minus the drift rate for the incorrect response.
+
+### ANODAL
+
+```{r echo=FALSE}
+
+
+COEFS_anodal_diff = samples$COEFS_anodal_B
+COEFS_cathodal_diff = samples$COEFS_cathodal_B
+COEFS_sham_diff = samples$COEFS_sham_B
+
+#anodal
+kable(
+  data.frame(lower=apply(COEFS_anodal_diff,2,quantile,0.025),
+             mean=apply(COEFS_anodal_diff,2,mean),
+             upper=apply(COEFS_anodal_diff,2,quantile,0.975),
+            row.names = names),
+      digits=3)
+
+```
+
+### CATHODAL
+
+```{r echo=FALSE}
+
+#anodal
+kable(
+  data.frame(lower=apply(COEFS_cathodal_diff,2,quantile,0.025),
+             mean=apply(COEFS_cathodal_diff,2,mean),
+             upper=apply(COEFS_cathodal_diff,2,quantile,0.975),
+            row.names = names),
+      digits=3)
+
+```
+
+### SHAM
+
+```{r echo=FALSE}
+
+#anodal
+kable(
+  data.frame(lower=apply(COEFS_sham_diff,2,quantile,0.025),
+             mean=apply(COEFS_sham_diff,2,mean),
+             upper=apply(COEFS_sham_diff,2,quantile,0.975),
+            row.names = names),
+      digits=3)
+
+```
+
+
+### ANODAL VS SHAM
+
+```{r echo=FALSE}
+
+#anodal
+kable(
+  data.frame(lower=apply(COEFS_anodal_diff-COEFS_sham_diff,2,quantile,0.025),
+             mean=apply(COEFS_anodal_diff-COEFS_sham_diff,2,mean),
+             upper=apply(COEFS_anodal_diff-COEFS_sham_diff,2,quantile,0.975),
+            row.names = names),
+      digits=3)
+
+```
+
+
+### CATHODAL VS SHAM
+
+```{r echo=FALSE}
+
+#anodal
+kable(
+  data.frame(lower=apply(COEFS_cathodal_diff-COEFS_sham_diff,2,quantile,0.025),
+             mean=apply(COEFS_cathodal_diff-COEFS_sham_diff,2,mean),
+             upper=apply(COEFS_cathodal_diff-COEFS_sham_diff,2,quantile,0.975),
+            row.names = names),
+      digits=3)
+
+```
+
+
