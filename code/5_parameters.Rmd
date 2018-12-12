@@ -1,5 +1,5 @@
 ---
-title: "Summary of Regression Coefficients"
+title: "Summary of Regression Coefficients for Glutamate Model"
 author: "Tim Ballard"
 date: "12/5/2018"
 output:
@@ -13,7 +13,7 @@ library(rstan)
 library(knitr)
 
 #load fit object and extract samples
-load(file="../data/derived/fit_vtfB_ratio_reciprocal.RData")
+load(file="../data/derived/fit_vtfB_glut_reciprocal.RData")
 samples = extract(fit)
 
 names = c('intercept','gender (1=f,-1=m)','age','task pairing 2','task pairing 3','PFC greymatter','ratio')
