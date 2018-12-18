@@ -1,3 +1,4 @@
 .DS_Store
 .Rproj.user
 data/derived/DMC_samples/*
+data/derived/*
