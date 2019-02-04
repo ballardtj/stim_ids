@@ -193,62 +193,44 @@ data{
 parameters {
     //hyperparameters
     real<lower=0> A_mean;
-    //real<lower=0,upper=1> A_sd;
     real<lower=0> A_sd;
     real<lower=0> s_mean;
     real<lower=0> s_sd;
     real<lower=0> B_pre_mean;
     real<lower=0> B_pre_sd;
-    //real<lower=0,upper=1> B_pre_sd;
     real<lower=0.1,upper=1> tau_mean;
     real<lower=0,upper=1> tau_sd;
-    //real<lower=0,upper=1> tau_sd;
-  //  real v_false_pre_mean;
-   // real<lower=0> v_false_pre_sd;
-    //real<lower=0,upper=1> v_false_pre_sd;
+
     real v_true_pre_mean;
     real<lower=0> v_true_pre_sd;
-    //real<lower=0,upper=1> v_true_pre_sd;
 
-    vector[Nvars] COEFS_anodal_v_true;
-    real<lower=0> dvt_anodal_sd;
-    vector[Nvars] COEFS_cathodal_v_true;
-    real<lower=0> dvt_cathodal_sd;
-    vector[Nvars] COEFS_sham_v_true;
+    real dvt_sham_mean;
     real<lower=0> dvt_sham_sd;
+    real dB_sham_mean;
+    real<lower=0> dB_sham_sd;
 
-    //vector[Nvars] COEFS_anodal_v_false;
-    //real<lower=0> dvf_anodal_sd;
-    //vector[Nvars] COEFS_cathodal_v_false;
-    //real<lower=0> dvf_cathodal_sd;
-    //vector[Nvars] COEFS_sham_v_false;
-    //real<lower=0> dvf_sham_sd;
+    vector[Nvars] COEFS_anodal_vt;
+    real<lower=0> vt_anodal_sd;
+    vector[Nvars] COEFS_cathodal_vt;
+    real<lower=0> vt_cathodal_sd;
 
     vector[Nvars] COEFS_anodal_B;
-    real<lower=0> dB_anodal_sd;
+    real<lower=0> B_anodal_sd;
     vector[Nvars] COEFS_cathodal_B;
-    real<lower=0> dB_cathodal_sd;
-    vector[Nvars] COEFS_sham_B;
-    real<lower=0> dB_sham_sd;
+    real<lower=0> B_cathodal_sd;
 
     //person-level parameters
     vector<lower=0>[Nsubj] A_raw;
     vector<lower=0>[Nsubj] s_raw;
     vector<lower=0>[Nsubj] B_pre_raw;
     vector<lower=0.1,upper=1>[Nsubj] tau;
- //   vector[Nsubj] v_false_pre_raw;
     vector[Nsubj] v_true_pre_raw;
-
-    vector[Nsubj] dvt_anodal_raw;   //change in anodal
-    vector[Nsubj] dvt_cathodal_raw; //change in cathodal condition
+    vector[Nsubj] vt_anodal_disruption_raw;   //change in anodal
+    vector[Nsubj] vt_cathodal_disruption_raw; //change in cathodal condition
     vector[Nsubj] dvt_sham_raw;     //change in sham condition
-    //vector[Nsubj] dvf_anodal_raw;   //change in anodal
-    //vector[Nsubj] dvf_cathodal_raw; //change in cathodal condition
-    //vector[Nsubj] dvf_sham_raw;     //change in sham condition
-    vector[Nsubj] dB_anodal_raw;   //change in anodal
-    vector[Nsubj] dB_cathodal_raw; //change in cathodal condition
+    vector[Nsubj] B_anodal_disruption_raw;   //change in anodal
+    vector[Nsubj] B_cathodal_disruption_raw; //change in cathodal condition
     vector[Nsubj] dB_sham_raw;     //change in sham condition
-
 
 }
 
@@ -257,49 +239,30 @@ transformed parameters {
      vector<lower=0>[Nsubj] A;
      //vector[Nsubj] v_false_pre;
      vector[Nsubj] v_true_pre;
-     vector[Nsubj] v_true_post_sham;
      vector<lower=0>[Nsubj] B_pre;
-     vector<lower=0>[Nsubj] B_post_sham;
 
-     //Change in drift and thresh from pre to post in sham condition
-     vector[Nsubj] dvt_sham;
-     vector[Nsubj] dB_sham;
+     //Outputs of regression models
+     vector[Nsubj] vt_anodal_disruption_mean;
+     vector[Nsubj] vt_cathodal_disruption_mean;
+     vector[Nsubj] B_anodal_disruption_mean;
+     vector[Nsubj] B_cathodal_disruption_mean;
 
-     //
-     vector[Nsubj] vt_disruption_anodal_mean;
-     vector[Nsubj] vt_disruption_cathodal_mean;
-     vector[Nsubj] B_disruption_anodal_mean;
-     vector[Nsubj] B_disruption_cathodal_mean;
+     vector[Nsubj] vt_anodal_disruption;
+     vector[Nsubj] vt_cathodal_disruption;
+     vector[Nsubj] B_anodal_disruption;
+     vector[Nsubj] B_cathodal_disruption;
 
-     vector[Nsubj]
-
-
-
-
-
-
-     vector<lower=0>[Nsubj] B_pre;
-     vector[Nsubj] dvt_anodal_mean;
-     vector[Nsubj] dvt_cathodal_mean;
-     vector[Nsubj] dvt_sham_mean;
-    // vector[Nsubj] dvf_anodal_mean;
-    // vector[Nsubj] dvf_cathodal_mean;
-    // vector[Nsubj] dvf_sham_mean;
-     vector[Nsubj] dB_anodal_mean;
-     vector[Nsubj] dB_cathodal_mean;
-     vector[Nsubj] dB_sham_mean;
      vector[Nsubj] dvt_anodal;
      vector[Nsubj] dvt_cathodal;
      vector[Nsubj] dvt_sham;
-     //vector[Nsubj] dvf_anodal;
-     //vector[Nsubj] dvf_cathodal;
-     //vector[Nsubj] dvf_sham;
+
      vector[Nsubj] dB_anodal;
      vector[Nsubj] dB_cathodal;
      vector[Nsubj] dB_sham;
+
      vector[Ntotal] dB;
      real dB_min;
-     //vector[Ntotal] v_false;
+
      vector[Ntotal] v_true;
      vector[Ntotal] B;
 
@@ -310,8 +273,10 @@ transformed parameters {
      A = A_mean + A_sd*A_raw;
      s = s_mean + s_sd*s_raw;
      B_pre = B_pre_mean + B_pre_sd*B_pre_raw;
-     //v_false_pre = 1;//v_false_pre_mean + v_false_pre_sd*v_false_pre_raw;
      v_true_pre = v_true_pre_mean + v_true_pre_sd*v_true_pre_raw;
+     dvt_sham = dvt_sham_mean + dvt_sham_sd*dvt_sham_raw;
+     dB_sham = dB_sham_mean + dB_sham_sd*dB_sham_raw;
+
 
      //calculate means for distribution parameters
      vt_anodal_disruption_mean = COVS * COEFS_anodal_vt;
@@ -320,46 +285,32 @@ transformed parameters {
      B_cathodal_disruption_mean = COVS * COEFS_cathodal_B;
 
      //uncenter distruption variables
-     vt_anodal_disruption = vt_anodal_disruption_raw*vt_anodal_disruption_sd + vt_anodal_disruption_mean;
-     vt_cathodal_disruption = vt_cathodal_disruption_raw*vt_cathodal_disruption_sd + vt_cathodal_disruption_mean;
-     B_anodal_disruption = B_anodal_disruption_raw*B_anodal_disruption_sd + B_anodal_disruption_mean;
-     B_cathodal_disruption = B_cathodal_disruption_raw*B_cathodal_disruption_sd + B_cathodal_disruption_mean;
+     vt_anodal_disruption = vt_anodal_disruption_raw*vt_anodal_sd + vt_anodal_disruption_mean;
+     vt_cathodal_disruption = vt_cathodal_disruption_raw*vt_cathodal_sd + vt_cathodal_disruption_mean;
+     B_anodal_disruption = B_anodal_disruption_raw*B_anodal_sd + B_anodal_disruption_mean;
+     B_cathodal_disruption = B_cathodal_disruption_raw*B_cathodal_sd + B_cathodal_disruption_mean;
 
-    //calculate vt and B post for anodal and cathodal
-    vt_post_anodal = vt_post_sham +  vt_anodal_disruption;
-    vt_post_cathodal = vt_post_sham +  vt_cathodal_disruption;
-
-    B_post_anodal = B_post_sham + B_anodal_disruption;
-    B_post_cathodal = B_post_sham + B_cathodal_disruption;
-
-
+     //calculate vt and B post for anodal and cathodal.
+     dvt_anodal = dvt_sham + vt_anodal_disruption;
+     dvt_cathodal = dvt_sham + vt_cathodal_disruption;
+     dB_anodal = dB_sham + B_anodal_disruption;
+     dB_cathodal = dB_sham + B_cathodal_disruption;
 
     //calculate v_true
-    v_true = vt_pre[subject] .* pre
-        vt_post_anodal[subject] .* post_anodal +
-        vt_post_cathodal[subject] .* post_cathodal +
-        vt_post_sham[subject] .* post_sham;
+    v_true = v_true_pre[subject] +
+        dvt_anodal[subject] .* dpost_anodal +
+        dvt_cathodal[subject] .* dpost_cathodal +
+        dvt_sham[subject] .* dpost_sham;
 
     //calculate B
-    B_tmp = B_pre[subject] .* pre +
-          B_post_anodal[subject] .* dpost_anodal +
-        B_post_cathodal[subject] .* dpost_cathodal +
-        B_post_sham[subject] .* dpost_sham;
+    dB = dB_anodal[subject] .* dpost_anodal +
+        dB_cathodal[subject] .* dpost_cathodal +
+        dB_sham[subject] .* dpost_sham;
 
-     B_min = min(B_tmp); //calculates lowest threshold
+     dB_min = min(dB); //calculates lowest threshold
 
      B = B_pre[subject] - dB_min + dB; //actual B_pre = B_pre - min; function is "pushed up" so threshold must be positive
 
-#ignore less than 0 issue?
-#check brm paper?
-
-
-//
-//      dvt_anodal = dpost_anodal_vars * COEFS_anodal;
-//      dvt_cathodal = dpost_cathodal_vars * COEFS_cathodal;
-//      dvt_sham = dpost_sham_vars * COEFS_sham;
-//
-//      v_true = v_true_pre[subject] + dvt_anodal + dvt_cathodal + dvt_sham;
 }
 
 model {
@@ -373,28 +324,22 @@ model {
      B_pre_sd ~ normal(0,1);
      v_true_pre_mean ~ normal(1,2); //v_true_pre_sd ~ uniform(0,1)
      v_true_pre_sd ~ normal(0,1);
-     //v_false_pre_mean ~ normal(1,2); //v_false_pre_sd ~ uniform(0,1)
-     //v_false_pre_sd ~ normal(0,1);
-     //v_false_mean ~ normal(1,2); //v_false_sd ~ uniform(0,1)
-     //tau_mean ~ uniform(0.1,1); tau_sd ~ uniform(0,1)
-     COEFS_anodal_v_true ~ normal(0,2);
-     COEFS_cathodal_v_true ~ normal(0,2);
-     COEFS_sham_v_true ~ normal(0,2);
-     //COEFS_anodal_v_false ~ normal(0,2);
-     //COEFS_cathodal_v_false ~ normal(0,2);
-     //COEFS_sham_v_false ~ normal(0,2);
+
+     dvt_sham_mean ~ normal(0,1);
+     dvt_sham_sd ~ normal(0,1);
+     dB_sham_mean ~ normal(0,1);
+     dB_sham_sd ~ normal(0,1);
+
+
+     COEFS_anodal_vt ~ normal(0,2);
+     COEFS_cathodal_vt ~ normal(0,2);
+     vt_anodal_sd ~ normal(0,1);
+     vt_cathodal_sd ~ normal(0,1);
+
      COEFS_anodal_B ~ normal(0,2);
      COEFS_cathodal_B ~ normal(0,2);
-     COEFS_sham_B ~ normal(0,2);
-     dvt_anodal_sd ~ normal(0,1);
-     dvt_cathodal_sd ~ normal(0,1);
-     dvt_sham_sd ~ normal(0,1);
-     //dvf_anodal_sd ~ normal(0,1);
-     //dvf_cathodal_sd ~ normal(0,1);
-     //dvf_sham_sd ~ normal(0,1);
-     dB_anodal_sd ~ normal(0,1);
-     dB_cathodal_sd ~ normal(0,1);
-     dB_sham_sd ~ normal(0,1);
+     B_anodal_sd ~ normal(0,1);
+     B_cathodal_sd ~ normal(0,1);
 
      //priors
      A_raw ~ normal(0,1);
@@ -409,16 +354,12 @@ model {
      }
 
      //regression (not sure if these can be uncentred)
-     dvt_anodal_raw ~ normal(0,1);  //  implies  normal(dvt_anodal_mean,dvt_anodal_sd);
-     dvt_cathodal_raw ~ normal(0,1);  //  implies normal(dvt_cathodal_mean,dvt_cathodal_sd);
+     vt_anodal_disruption_raw ~ normal(0,1);  //  implies  normal(dvt_anodal_mean,dvt_anodal_sd);
+     vt_cathodal_disruption_raw ~ normal(0,1);  //  implies normal(dvt_cathodal_mean,dvt_cathodal_sd);
      dvt_sham_raw ~ normal(0,1);  //  implies normal(dvt_sham_mean,dvt_sham_sd);
 
-     //dvf_anodal_raw ~ normal(0,1);  //  implies normal(dvf_anodal_mean,dvf_anodal_sd);
-     //dvf_cathodal_raw ~ normal(0,1);  //  implies normal(dvf_cathodal_mean,dvf_cathodal_sd);
-     //dvf_sham_raw ~ normal(0,1);  //  implies normal(dvf_sham_mean,dvf_sham_sd);
-
-     dB_anodal_raw ~ normal(0,1);  //  implies normal(dB_anodal_mean,dB_anodal_sd);
-     dB_cathodal_raw ~ normal(0,1);  //  implies normal(dB_cathodal_mean,dB_cathodal_sd);
+     B_anodal_disruption_raw ~ normal(0,1);  //  implies normal(dB_anodal_mean,dB_anodal_sd);
+     B_cathodal_disruption_raw ~ normal(0,1);  //  implies normal(dB_cathodal_mean,dB_cathodal_sd);
      dB_sham_raw ~ normal(0,1);  //  implies normal(dB_sham_mean,dB_sham_sd);
 
      RT ~ lba(A[subject],B,v_false,s[subject],tau[subject],v_true);
