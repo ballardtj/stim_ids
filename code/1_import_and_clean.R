@@ -174,7 +174,14 @@ stan_list = list(
   dpost_anodal = (trimmed_data$time=="dpost") * (trimmed_data$session=="anodal"),# * vars,
   dpost_cathodal = (trimmed_data$time=="dpost") * (trimmed_data$session=="cathodal"),# * vars,
   dpost_sham = (trimmed_data$time=="dpost") * (trimmed_data$session=="sham"),# *vars,
-  RT = cbind(trimmed_data$rt,trimmed_data$correct + 1) #1 = incorrect, 2 = correct
+  RT = cbind(trimmed_data$rt,trimmed_data$correct + 1), #1 = incorrect, 2 = correct
+  Ncell = 6,
+  cell = (trimmed_data$time=="pre") * (trimmed_data$session=="anodal") * 1 +
+         (trimmed_data$time=="dpost") * (trimmed_data$session=="anodal") * 2 +
+         (trimmed_data$time=="pre") * (trimmed_data$session=="cathodal") * 3 +
+         (trimmed_data$time=="dpost") * (trimmed_data$session=="cathodal") * 4 +
+         (trimmed_data$time=="pre") * (trimmed_data$session=="sham") * 5 +
+         (trimmed_data$time=="dpost") * (trimmed_data$session=="sham") * 6
 )
 
 save(stan_list,file="data/clean/stan_list.RData")
