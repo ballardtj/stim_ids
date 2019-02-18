@@ -1,5 +1,5 @@
 ---
-title: "Summary of Regression Coefficients for Glutamate Model"
+title: "Summary of Regression Coefficients for GABA Model"
 author: "Tim Ballard"
 date: "12/5/2018"
 output:
@@ -13,10 +13,10 @@ library(rstan)
 library(knitr)
 
 #load fit object and extract samples
-load(file="../data/derived/fit_vtfB_glut_reciprocal.RData")
+load(file="../data/derived/fit_vtfB_gaba_reciprocal_vf_fixed.RData")
 samples = extract(fit)
 
-names = c('intercept','gender (1=f,-1=m)','age','task pairing 2','task pairing 3','PFC greymatter','ratio')
+names = c('intercept','gender (1=f,-1=m)','age','task pairing 2','task pairing 3','PFC greymatter','gaba')
 
 
 ```
@@ -30,9 +30,9 @@ Note: discriminability is calculated as the drift rate for the correct response 
 ```{r echo=FALSE}
 
 
-COEFS_anodal_diff = samples$COEFS_anodal_v_diff
-COEFS_cathodal_diff = samples$COEFS_cathodal_v_diff
-COEFS_sham_diff = samples$COEFS_sham_v_diff
+COEFS_anodal_diff = samples$COEFS_anodal_v_true
+COEFS_cathodal_diff = samples$COEFS_cathodal_v_true
+COEFS_sham_diff = samples$COEFS_sham_v_true
 
 #anodal
 kable(

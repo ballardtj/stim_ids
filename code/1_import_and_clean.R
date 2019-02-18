@@ -75,7 +75,13 @@ imported_data_tmp = as.tibble(dat %>%
 individual_diffs = read.csv("data/raw/Neurochemical_variables.csv") %>%
   mutate(subject = Subj) %>% select(-Subj)
 
-imported_data = left_join(imported_data_tmp,individual_diffs,by="subject")
+imported_data_tmp2 = left_join(imported_data_tmp,individual_diffs,by="subject")
+
+#Read in white matter data as well
+white_matter = read.csv("data/raw/White_Matter.csv") %>%
+  mutate(subject = Subj,PFCwhitematter=PCFwhitematter) %>% select(-Subj,-PCFwhitematter)
+
+imported_data = left_join(imported_data_tmp2,white_matter,by="subject")
 
 # #All subjects with 2160 trials, except 1 subject who didn't complete
 # as.data.frame(
@@ -139,6 +145,7 @@ ids = trimmed_data %>%
             age = Age[1],
             taskpairing = taskpairing[1],
             PFCgreymatter = PFCgreymatter[1],
+            PFCwhitematter = PFCwhitematter[1],
             PFCGABA = PFCGABA[1],
             PFCGlutamate = PFCGlutamate[1],
             PFCRatio = PFCRatio[1])
@@ -150,9 +157,11 @@ COVS = cbind(
   as.numeric(ids$taskpairing==2), #dummy variable representing if task pairing has value of 2
   as.numeric(ids$taskpairing==3), #dummy variable representing if task pairing has value of 3
   scale(ids$PFCgreymatter),
+  scale(ids$PFCwhitematter),
   scale(ids$PFCGABA),
   scale(ids$PFCGlutamate),
-  scale(ids$PFCRatio),
+  scale(ids$PFCGABA)^2,
+  scale(ids$PFCGlutamate)^2,
   scale(ids$PFCGABA)*scale(ids$PFCGlutamate)
 )
 

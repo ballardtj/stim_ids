@@ -51,7 +51,7 @@ stan_list$COVS = stan_list$COVS[,c(1:6,9)]
 stan_list$Nvars = stan_list$Nvars-3
 
 #sample
-fit=stan(file="models/lba_vtfB_reciprocal_vf_fixed.stan",
+fit=stan(file="models/lba_vtfB_polynomial_disruption.stan",
          data=stan_list,
          pars=c('v_true','v_false','B'),
          include=F,
