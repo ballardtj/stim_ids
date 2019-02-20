@@ -5,6 +5,7 @@ rm(list=ls())
 #load packages
 library(rstan)
 
+
 #load fit object
 load(file="data/derived/fit_vtfB_gaba.RData")
 

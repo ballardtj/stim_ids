@@ -6,24 +6,6 @@ rm(list=ls())
 library(tidyverse)
 
 
-#RUN ANALYSIS ON HANNAH'S JASP DATA
-jasp_data = read_csv(file="data/clean/DataJasp.csv") %>%
-  mutate(taskpairing_2 = as.numeric(taskpairing==2),
-         taskpairing_3 = as.numeric(taskpairing==3))
-
-#original specification
-res=lm(CathodeVsSham ~ age + Gender + taskpairing + PFCgreymatter + PCFwhitematter +
-         PFCei,data=jasp_data)
-
-summary(res)
-
-#task pairing as two dichotomous variables
-res=lm(CathodeVsSham ~ age + Gender + taskpairing_2 + taskpairing_3 + PFCgreymatter + PCFwhitematter +
-         PFCei,data=jasp_data)
-
-summary(res)
-
-#### REPLICATION OF THAT ANALYSIS WITH MY COMPILED DATA ####
 load(file="data/clean/trimmed_data.RData")
 
 ids = trimmed_data %>%
@@ -120,9 +102,16 @@ expand.grid(GABA = seq(-2,2,by=0.1),
 #TODO: Bayesian models of regression
 
 
-
-
 ##### ANALYSES ON PARAMETERS FROM PERSON LEVEL MODEL #####
+
+load(file="data/derived/fit_vtfB_pl.RData")
+
+parms  = rstan::extract(fit)
+
+#1 = anodal pre, #2 = anodal post, #3 = cathodal pre, #4 = cathocal post, #5 = sham pre, #5 = sham post
+
+
+
 
 
 
