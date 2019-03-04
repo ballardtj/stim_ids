@@ -173,7 +173,7 @@ unstuck_samples <- h.run.unstuck.dmc(starting_samples, p.migrate = .05, cores = 
 final_samples <- h.run.converge.dmc(h.samples.dmc(nmc=100, samples=unstuck_samples), nmc=100,cores=7,finalrun=T,finalI=500,minN=400,meanN=450)
 save(final_samples, file = "data/derived/dmc_final_samples_hierarchical.RData")
 
-#load("data/derived/dmc_final_samples_person_level.RData")
+load("data/derived/dmc_final_samples_hierarchical.RData")
 
 
 #----------------------------------------#
@@ -182,136 +182,136 @@ save(final_samples, file = "data/derived/dmc_final_samples_hierarchical.RData")
 
 gelman.diag.dmc(final_samples)
 
-# 14   40    6   26   18   20   30   25   38   19   33   32    7   13   36   43   15
-# 1.09 1.09 1.09 1.09 1.09 1.09 1.09 1.09 1.09 1.09 1.09 1.09 1.09 1.09 1.10 1.10 1.10
-# 1   44   51   55   31   22   17   21   11    2   52    3   34   16   39   42   28
-# 1.10 1.10 1.10 1.10 1.10 1.10 1.10 1.10 1.10 1.10 1.10 1.10 1.10 1.10 1.10 1.10 1.10
-# 54   23   53   35   29   37    9   46   10    8   41   47   24
-# 1.10 1.10 1.10 1.10 1.10 1.10 1.10 1.10 1.10 1.10 1.10 1.10 1.10
+# 32   26    1   47   21    9   40   23    7   19   13   16   53   33   28   25    8   29   14   43   42   51   37
+# 1.02 1.02 1.02 1.02 1.02 1.02 1.02 1.02 1.02 1.02 1.02 1.02 1.02 1.02 1.02 1.02 1.02 1.02 1.02 1.02 1.02 1.02 1.02
+# 39   55   11    6   54   20    3   38   52   10   30   34   41   35   46   15   31   44   17    2   24   22   18
+# 1.02 1.02 1.02 1.03 1.03 1.03 1.03 1.03 1.03 1.03 1.03 1.03 1.03 1.03 1.03 1.03 1.03 1.03 1.03 1.03 1.03 1.04 1.04
+# 36
+# 1.04
 # Mean
-# [1] 1.1
+# [1] 1.03
 
 effectiveSize.dmc(final_samples)
 
 #most are well above 1000
 
-#plot.dmc(final_samples,subject=47)
+plot.dmc(final_samples,hyper=T)
 
 
 #-------------------------------------------------#
 #             POSTERIOR PREDITIVES                #
 #-------------------------------------------------#
 
-# pp=h.post.predict.dmc(samples=final_samples,save.simulation=T,cores=7)
-#
-# sim = do.call(rbind, pp) %>%
-#   mutate(prev_reps = lag(reps),
-#          new_subject = as.numeric(reps < prev_reps))
-#
-# sim$new_subject[1] = 1
-# sim$subject = cumsum(sim$new_subject)
-#
-# ### Accuracy ###
-#
-# sim_acc = sim %>%
-#   #mutate(s = rownames(sim),
-#  #        s = gsub("\\..*","",s)) %>%
-#   mutate(correct = as.numeric(S == tolower(R))) %>%
-#   group_by(subject,time,session,reps) %>%
-#   mutate(accuracy = mean(correct)) %>%
-#   group_by(time,session,reps) %>%
-#   summarise(mean_accuracy = mean(accuracy)) %>%
-#   group_by(time,session) %>%
-#   summarise(prop_m = mean(mean_accuracy),
-#             prop_l = quantile(mean_accuracy,0.025),
-#             prop_u = quantile(mean_accuracy,0.975),
-#             source = "Model")
-#
-# data = lapply(pp, function(x) attr(x, "data"))
-# data = do.call(rbind, data)
-# data_acc = data %>%
-#   #mutate(s = rownames(data),
-#   #       s = gsub("\\..*","",s)) %>%
-#   mutate(correct = as.numeric(S == tolower(R))) %>%
-#   group_by(subject,time,session) %>%
-#   mutate(accuracy = mean(correct)) %>%
-#   group_by(time,session) %>%
-#   summarise(prop_m = mean(accuracy),
-#             prop_l = NA,#prop_m - sd(prop)/sqrt(n()),
-#             prop_u = NA,#prop_m + sd(prop)/sqrt(n()),
-#             source = "Data")
-#
-# pp_acc =  bind_rows(data_acc,sim_acc) %>%
-#   ungroup() %>%
-#   mutate(Time = factor(time,levels=c('pre','dpost'),labels=c('Pre','Delayed Post')),
-#        Session = factor(session,levels=c('anodal','cathodal','sham'),labels=c('Anodal','Cathodal','Sham'))) %>%
-#   ggplot(aes(x=Time,y=prop_m,group=source,colour=source)) +
-#   geom_errorbar(aes(ymax = prop_u, ymin = prop_l), width= 0.2) +
-#   geom_point(pch=21, size=2) +
-#   geom_line(aes(group=source)) +
-#   ylab("Proportion Correct") + xlab('Time') +
-#   scale_y_continuous(breaks = seq(0.5,1,0.1),limits = c(0.5,1)) +
-#   facet_grid(.~Session)
-#
-# ### Response Time ###
-#
-# sim_rt = sim %>%
-#   mutate(correct = as.numeric(S == tolower(R))) %>%
-#   group_by(subject,time,session,reps,correct) %>%
-#   #count number of responses of each type in each condition
-#   mutate(count = n()) %>%
-#   #filter out responses that were made less than 5 times
-#   filter(count >= 5) %>%
-#   #generate quantiles
-#   summarise(q10 = quantile(RT,.1),
-#             q30 = quantile(RT,.3),
-#             q50 = quantile(RT,.5),
-#             q70 = quantile(RT,.7),
-#             q90 = quantile(RT,.9)) %>%
-#   gather(key=quantile,value=RT,q10:q90) %>%
-#   #average across subjects
-#   group_by(time,session,correct,quantile,reps) %>%
-#   summarise(RT = mean(RT)) %>%
-#   #get CIs
-#   group_by(time,session,correct,quantile) %>%
-#   summarise(RT_m = mean(RT),
-#             RT_l = quantile(RT,0.025),
-#             RT_u = quantile(RT,0.975),
-#             source = "Model")
-#
-# data_rt = data %>%
-#   mutate(correct = as.numeric(S == tolower(R))) %>%
-#   group_by(subject,time,session,correct) %>%
-#   #count number of responses of each type in each condition
-#   mutate(count = n()) %>%
-#   #filter out responses that were made less than 5 times
-#   filter(count >= 5) %>%
-#   #generate quantiles
-#   summarise(q10 = quantile(RT,.1),
-#             q30 = quantile(RT,.3),
-#             q50 = quantile(RT,.5),
-#             q70 = quantile(RT,.7),
-#             q90 = quantile(RT,.9)) %>%
-#   gather(key=quantile,value=RT,q10:q90) %>%
-#   #average across subjects
-#   group_by(time,session,correct,quantile) %>%
-#   summarise(RT_m = mean(RT),
-#             RT_l = NA, #RT_m - sd(RT)/sqrt(n()),
-#             RT_u = NA, #RT_m + sd(RT)/sqrt(n()),
-#             source = "Data")
-#
-# pp_rt =  bind_rows(data_rt,sim_rt) %>%
-#   ungroup() %>%
-#   mutate(Correct = factor(correct,levels=c(1,0),labels=c('Correct','Incorrect')),
-#          Time = factor(time,levels=c('pre','dpost'),labels=c('Pre','Delayed Post')),
-#          Session = factor(session,levels=c('anodal','cathodal','sham'),labels=c('Anodal','Cathodal','Sham'))) %>%
-#   ggplot(aes(x=Time,y=RT_m*1000,group=quantile,colour=source)) +
-#     geom_errorbar(aes(ymax = RT_u*1000, ymin = RT_l*1000), width= 0.2) +
-#     geom_point(pch=21, size=2) +
-#     geom_line(aes(group=interaction(quantile,source))) +
-#     ylab("Response Time (ms)") + xlab('Time') +
-#     scale_y_continuous(breaks = seq(500,2000,500),limits = c(250,2000)) +
-#     facet_grid(Correct~Session) #+ theme_minimal()
+pp=h.post.predict.dmc(samples=final_samples,save.simulation=T,cores=7)
+
+sim = do.call(rbind, pp) %>%
+  mutate(prev_reps = lag(reps),
+         new_subject = as.numeric(reps < prev_reps))
+
+sim$new_subject[1] = 1
+sim$subject = cumsum(sim$new_subject)
+
+### Accuracy ###
+
+sim_acc = sim %>%
+  #mutate(s = rownames(sim),
+ #        s = gsub("\\..*","",s)) %>%
+  mutate(correct = as.numeric(S == tolower(R))) %>%
+  group_by(subject,time,session,reps) %>%
+  mutate(accuracy = mean(correct)) %>%
+  group_by(time,session,reps) %>%
+  summarise(mean_accuracy = mean(accuracy)) %>%
+  group_by(time,session) %>%
+  summarise(prop_m = mean(mean_accuracy),
+            prop_l = quantile(mean_accuracy,0.025),
+            prop_u = quantile(mean_accuracy,0.975),
+            source = "Model")
+
+data = lapply(pp, function(x) attr(x, "data"))
+data = do.call(rbind, data)
+data_acc = data %>%
+  #mutate(s = rownames(data),
+  #       s = gsub("\\..*","",s)) %>%
+  mutate(correct = as.numeric(S == tolower(R))) %>%
+  group_by(subject,time,session) %>%
+  mutate(accuracy = mean(correct)) %>%
+  group_by(time,session) %>%
+  summarise(prop_m = mean(accuracy),
+            prop_l = NA,#prop_m - sd(prop)/sqrt(n()),
+            prop_u = NA,#prop_m + sd(prop)/sqrt(n()),
+            source = "Data")
+
+pp_acc =  bind_rows(data_acc,sim_acc) %>%
+  ungroup() %>%
+  mutate(Time = factor(time,levels=c('pre','dpost'),labels=c('Pre','Delayed Post')),
+       Session = factor(session,levels=c('anodal','cathodal','sham'),labels=c('Anodal','Cathodal','Sham'))) %>%
+  ggplot(aes(x=Time,y=prop_m,group=source,colour=source)) +
+  geom_errorbar(aes(ymax = prop_u, ymin = prop_l), width= 0.2) +
+  geom_point(pch=21, size=2) +
+  geom_line(aes(group=source)) +
+  ylab("Proportion Correct") + xlab('Time') +
+  scale_y_continuous(breaks = seq(0.5,1,0.1),limits = c(0.5,1)) +
+  facet_grid(.~Session)
+
+### Response Time ###
+
+sim_rt = sim %>%
+  mutate(correct = as.numeric(S == tolower(R))) %>%
+  group_by(subject,time,session,reps,correct) %>%
+  #count number of responses of each type in each condition
+  mutate(count = n()) %>%
+  #filter out responses that were made less than 5 times
+  filter(count >= 5) %>%
+  #generate quantiles
+  summarise(q10 = quantile(RT,.1),
+            q30 = quantile(RT,.3),
+            q50 = quantile(RT,.5),
+            q70 = quantile(RT,.7),
+            q90 = quantile(RT,.9)) %>%
+  gather(key=quantile,value=RT,q10:q90) %>%
+  #average across subjects
+  group_by(time,session,correct,quantile,reps) %>%
+  summarise(RT = mean(RT)) %>%
+  #get CIs
+  group_by(time,session,correct,quantile) %>%
+  summarise(RT_m = mean(RT),
+            RT_l = quantile(RT,0.025),
+            RT_u = quantile(RT,0.975),
+            source = "Model")
+
+data_rt = data %>%
+  mutate(correct = as.numeric(S == tolower(R))) %>%
+  group_by(subject,time,session,correct) %>%
+  #count number of responses of each type in each condition
+  mutate(count = n()) %>%
+  #filter out responses that were made less than 5 times
+  filter(count >= 5) %>%
+  #generate quantiles
+  summarise(q10 = quantile(RT,.1),
+            q30 = quantile(RT,.3),
+            q50 = quantile(RT,.5),
+            q70 = quantile(RT,.7),
+            q90 = quantile(RT,.9)) %>%
+  gather(key=quantile,value=RT,q10:q90) %>%
+  #average across subjects
+  group_by(time,session,correct,quantile) %>%
+  summarise(RT_m = mean(RT),
+            RT_l = NA, #RT_m - sd(RT)/sqrt(n()),
+            RT_u = NA, #RT_m + sd(RT)/sqrt(n()),
+            source = "Data")
+
+pp_rt =  bind_rows(data_rt,sim_rt) %>%
+  ungroup() %>%
+  mutate(Correct = factor(correct,levels=c(1,0),labels=c('Correct','Incorrect')),
+         Time = factor(time,levels=c('pre','dpost'),labels=c('Pre','Delayed Post')),
+         Session = factor(session,levels=c('anodal','cathodal','sham'),labels=c('Anodal','Cathodal','Sham'))) %>%
+  ggplot(aes(x=Time,y=RT_m*1000,group=quantile,colour=source)) +
+    geom_errorbar(aes(ymax = RT_u*1000, ymin = RT_l*1000), width= 0.2) +
+    geom_point(pch=21, size=2) +
+    geom_line(aes(group=interaction(quantile,source))) +
+    ylab("Response Time (ms)") + xlab('Time') +
+    scale_y_continuous(breaks = seq(500,2000,500),limits = c(250,2000)) +
+    facet_grid(Correct~Session) #+ theme_minimal()
 #
 #
 #
@@ -327,7 +327,7 @@ effectiveSize.dmc(final_samples)
 #
 #
 #
-# ps=summary.dmc(final_samples)
+ps=summary.dmc(final_samples,hyper.means = T,hyper.ci = T)
 # write.csv(ps[[1]]$statistics,"hierarchical_parameters.csv")
 #
 # pp=h.post.predict.dmc(samples=final_samples)
@@ -336,14 +336,14 @@ effectiveSize.dmc(final_samples)
 #
 #
 # #Variable transformations - mean parameters
-# Nsubj=length(ps)
-# Nvar=length(ps[[1]]$statistics[,'Mean'])+1 #extra for subject
-# subject_means=data.frame(matrix(NA,Nsubj,Nvar))
-# names(subject_means)=c('subject',names(ps[[1]]$statistics[,'Mean']))
-# for(i in 1:Nsubj){
-#   subject_means[i,1] = as.numeric(names(ps[i]))
-#   subject_means[i,2:Nvar]=ps[[i]]$statistics[,'Mean']
-# }
+Nsubj=length(ps)
+Nvar=length(ps[[1]]$statistics[,'Mean'])+1 #extra for subject
+subject_means=data.frame(matrix(NA,Nsubj,Nvar))
+names(subject_means)=c('subject',names(ps[[1]]$statistics[,'Mean']))
+for(i in 1:Nsubj){
+  subject_means[i,1] = as.numeric(names(ps[i]))
+  subject_means[i,2:Nvar]=ps[[i]]$statistics[,'Mean']
+}
 #
 # #Difference in Drift
 # subject_means$mean_v.pre.anodal.diff = subject_means$mean_v.pre.anodal.true      - subject_means$mean_v.pre.anodal.false
