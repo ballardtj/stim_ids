@@ -38,7 +38,6 @@ dmc_data = trimmed_data %>%
 
 #------------------
 
-
 model <- model.dmc(p.map=list(A="1",B=c("time","session"),mean_v=c("time","session","M"),sd_v=c('time','session'),t0=c("time","session"), st0="1"),
    match.map=list(M=list(aa="AA",bb="BB",cc="CC",dd="DD",ee="EE",ff="FF")),
    factors=list(S=c("aa","bb","cc","dd","ee","ff"),time=c('pre','dpost'),session=c('anodal','cathodal','sham')),
@@ -103,15 +102,15 @@ pop.mean <- c(A=1, B.pre.anodal=1, B.dpost.anodal=1,
               t0.pre.sham=.3,t0.dpost.sham=0.3)
 
 #scales are the same as used in tutorial 4.6 (though note that they are initially specified as very small, and then multiplied by 5 on line 82)
-pop.scale <- c(A=5, B.pre.anodal=5, B.dpost.anodal=5,
-              B.pre.cathodal=5, B.dpost.cathodal=5,
-              B.pre.sham=5, B.dpost.sham=5,
-              mean_v.pre.anodal.true=5, mean_v.dpost.anodal.true=5,
-              mean_v.pre.cathodal.true=5, mean_v.dpost.cathodal.true=5,
-              mean_v.pre.sham.true=5, mean_v.dpost.sham.true=5,
-              sd_v.pre.anodal=2, sd_v.dpost.anodal=2,
-              sd_v.pre.cathodal=2, sd_v.dpost.cathodal=2,
-              sd_v.pre.sham=2, sd_v.dpost.sham=2,
+pop.scale <- c(A=10, B.pre.anodal=10, B.dpost.anodal=10,
+              B.pre.cathodal=10, B.dpost.cathodal=10,
+              B.pre.sham=10, B.dpost.sham=10,
+              mean_v.pre.anodal.true=20, mean_v.dpost.anodal.true=20,
+              mean_v.pre.cathodal.true=20, mean_v.dpost.cathodal.true=20,
+              mean_v.pre.sham.true=20, mean_v.dpost.sham.true=20,
+              sd_v.pre.anodal=5, sd_v.dpost.anodal=5,
+              sd_v.pre.cathodal=5, sd_v.dpost.cathodal=5,
+              sd_v.pre.sham=5, sd_v.dpost.sham=5,
               t0.pre.anodal=.3,t0.dpost.anodal=0.3,
               t0.pre.cathodal=.3,t0.dpost.cathodal=0.3,
               t0.pre.sham=.3,t0.dpost.sham=0.3)
@@ -160,15 +159,15 @@ sigma.prior <- prior.p.dmc(
        t0.pre.anodal=0,t0.dpost.anodal=0,
        t0.pre.cathodal=0,t0.dpost.cathodal=0,
        t0.pre.sham=0,t0.dpost.sham=0),
-  p2=c(A=2, B.pre.anodal=2, B.dpost.anodal=2,
-       B.pre.cathodal=2, B.dpost.cathodal=2,
-       B.pre.sham=2, B.dpost.sham=2,
-       mean_v.pre.anodal.true=2, mean_v.dpost.anodal.true=2,
-       mean_v.pre.cathodal.true=2, mean_v.dpost.cathodal.true=2,
-       mean_v.pre.sham.true=2, mean_v.dpost.sham.true=2,
-       sd_v.pre.anodal=1, sd_v.dpost.anodal=1,
-       sd_v.pre.cathodal=1, sd_v.dpost.cathodal=1,
-       sd_v.pre.sham=1, sd_v.dpost.sham=1,
+  p2=c(A=5, B.pre.anodal=5, B.dpost.anodal=5,
+       B.pre.cathodal=5, B.dpost.cathodal=5,
+       B.pre.sham=5, B.dpost.sham=5,
+       mean_v.pre.anodal.true=5, mean_v.dpost.anodal.true=5,
+       mean_v.pre.cathodal.true=5, mean_v.dpost.cathodal.true=5,
+       mean_v.pre.sham.true=5, mean_v.dpost.sham.true=5,
+       sd_v.pre.anodal=2, sd_v.dpost.anodal=2,
+       sd_v.pre.cathodal=2, sd_v.dpost.cathodal=2,
+       sd_v.pre.sham=2, sd_v.dpost.sham=2,
        t0.pre.anodal=1,t0.dpost.anodal=1,
        t0.pre.cathodal=1,t0.dpost.cathodal=1,
        t0.pre.sham=1,t0.dpost.sham=1),
@@ -186,27 +185,22 @@ pp.prior <- list(mu.prior, sigma.prior)
 # ------------------------------------------------
 # Get starting values
 
-# starting_samples <- h.samples.dmc(nmc = 100, p.prior,data_model,pp.prior, thin = 10)
-#
-# unstuck_samples <- h.run.unstuck.dmc(starting_samples, p.migrate = .05,h.p.migrate=.05, cores = 24)
-#
-# final_samples <- h.run.converge.dmc(h.samples.dmc(nmc=100, samples=unstuck_samples,thin=10), nmc=100,cores=24,finalrun=T,finalI=500)
-# save(final_samples, file = "data/derived/dmc_final_samples_hierarchical_wide_priors.RData")
+starting_samples <- h.samples.dmc(nmc = 100, p.prior,data_model,pp.prior, thin = 10)
 
-load("data/derived/dmc_final_samples_hierarchical_wide_priors.RData")
+unstuck_samples <- h.run.unstuck.dmc(starting_samples, p.migrate = .05,h.p.migrate=.05, cores = 24)
 
-final_samples2 <- h.run.dmc(h.samples.dmc(nmc=500, samples=final_samples,thin=10),cores=24)
+final_samples <- h.run.converge.dmc(h.samples.dmc(nmc=100, samples=unstuck_samples,thin=10), nmc=100,cores=24,finalrun=T,finalI=1000)
 
-save(final_samples2, file = "data/derived/dmc_final_samples2_hierarchical_wide_priors.RData")
+save(final_samples, file = "data/derived/dmc_final_samples_hierarchical_super_wide_priors.RData")
 
 
 #----------------------------------------#
 #             CONVERGENCE                #
 #----------------------------------------#
 
-gelman.diag.dmc(final_samples2)
+gelman.diag.dmc(final_samples)
 
-effectiveSize.dmc(final_samples2)
+effectiveSize.dmc(final_samples)
 
 #most are well above 1000
 
@@ -217,7 +211,7 @@ effectiveSize.dmc(final_samples2)
 #-------------------------------------------------#
 
 
-pp=h.post.predict.dmc(samples=final_samples2,save.simulation=T,cores=7,censor=c(0,2))
+pp=h.post.predict.dmc(samples=final_samples,save.simulation=T,cores=7,censor=c(0,2))
 
 sim = do.call(rbind, pp) %>%
   mutate(prev_reps = lag(reps),
@@ -268,7 +262,7 @@ pp_acc =  bind_rows(data_acc,sim_acc) %>%
   scale_y_continuous(breaks = seq(0.5,1,0.1),limits = c(0.5,1)) +
   facet_grid(.~Session)
 
-ggsave("figures/fits_acc.pdf",pp_acc,height=5,width=6)
+ggsave("figures/fits_acc_super_wide.pdf",pp_acc,height=5,width=6)
 
 ### Response Time ###
 
@@ -330,22 +324,19 @@ pp_rt =  bind_rows(data_rt,sim_rt) %>%
     scale_y_continuous(breaks = seq(500,2000,500),limits = c(250,2000)) +
     facet_grid(Correct~Session) #+ theme_minimal()
 
-ggsave("figures/fits_rt.pdf",pp_acc,height=5,width=6)
+ggsave("figures/fits_rt_super_wide.pdf",pp_acc,height=5,width=6)
 
 #-------------------------------------------------#
 #             PARAMATER VALUES                    #
 #-------------------------------------------------#
 
-smry = summary.dmc(final_samples,start=400,hyper=T)
-
-
-smry = summary.dmc(final_samples,start=400)
+smry = summary.dmc(final_samples,start=400,hyper=T,hyper.ci=T)
 
 mean_parms = t(sapply(lapply(smry, '[[', 1), function (x) x[,'Mean']))
 mean_parms = as.data.frame(round(mean_parms,3))
 mean_parms$subject = rownames(mean_parms)
 
-write_csv(mean_parms,"data/clean/mean_parameters.csv")
+write_csv(mean_parms,"data/clean/mean_parameters_super_wide.csv")
 
 
 # #
