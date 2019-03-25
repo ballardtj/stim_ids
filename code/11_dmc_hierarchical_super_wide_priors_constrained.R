@@ -1,7 +1,7 @@
 rm(list=ls())
 library(tidyverse)
 
-#setwd("~/stim_ids")
+setwd("~/stim_ids")
 
 source ("dmc/dmc.R")
 load_model ("LBA","lba_B.R")
@@ -31,49 +31,40 @@ dmc_data = trimmed_data %>%
   filter(!is.na(R),  #remove NA values which indicate wrong key responses (27)
          phase!="3") %>% #remove second phase (phase=3) - only compare pre vs delayed post
   mutate(time = factor((phase=="2") +  (phase=="4")*2,levels=1:2,labels=c('pre','dpost') ),
+         condition = case_when(
+           time=="pre" ~ 1,
+           time=="dpost" & session == "anodal" ~ 2,
+           time=="dpost" & session == "cathodal" ~ 3,
+           time=="dpost" & session == "sham" ~ 4
+         ),
+         condition = factor(condition,levels=1:4,labels=c('pre','anodal','cathodal','sham')),
          RT=rt,
          s=as.factor(as.numeric(as.character(subject)))) %>% #Forces subject numbers to be between 0 and N
-  select(s,S,R,time,session,RT,subject) %>%
-  arrange(s,session,time,S)
+  select(s,S,R,condition,RT,subject) %>%
+  arrange(s,condition,S)
 
 #------------------
 
 
-model <- model.dmc(p.map=list(A="1",B=c("time","session"),mean_v=c("time","session","M"),sd_v=c('time','session'),t0=c("time","session"), st0="1"),
+model <- model.dmc(p.map=list(A="1",B=c("condition"),mean_v=c("condition","M"),sd_v="1",t0=c("condition"), st0="1"),
    match.map=list(M=list(aa="AA",bb="BB",cc="CC",dd="DD",ee="EE",ff="FF")),
-   factors=list(S=c("aa","bb","cc","dd","ee","ff"),time=c('pre','dpost'),session=c('anodal','cathodal','sham')),
-   constants=c(st0=0, mean_v.pre.anodal.false = 1,mean_v.dpost.anodal.false = 1,
-                  mean_v.pre.cathodal.false = 1,mean_v.dpost.cathodal.false = 1,
-                  mean_v.pre.sham.false = 1,mean_v.dpost.sham.false = 1),
+   factors=list(S=c("aa","bb","cc","dd","ee","ff"),condition=c('pre','anodal','cathodal','sham')),
+   constants=c(st0=0, mean_v.pre.false = 1,mean_v.anodal.false = 1,
+                  mean_v.cathodal.false = 1,mean_v.sham.false = 1),
    responses=c(aa="AA",bb="BB",cc="CC",dd="DD",ee="EE",ff="FF"),
    type="norm")
 
 # Parameter vector names are: ( see attr(,"p.vector") )
-# [1] "A"                          "B.pre.anodal"
-# [3] "B.dpost.anodal"             "B.pre.cathodal"
-# [5] "B.dpost.cathodal"           "B.pre.sham"
-# [7] "B.dpost.sham"               "mean_v.pre.anodal.true"
-# [9] "mean_v.dpost.anodal.true"   "mean_v.pre.cathodal.true"
-# [11] "mean_v.dpost.cathodal.true" "mean_v.pre.sham.true"
-# [13] "mean_v.dpost.sham.true"     "sd_v.pre.anodal"
-# [15] "sd_v.dpost.anodal"          "sd_v.pre.cathodal"
-# [17] "sd_v.dpost.cathodal"        "sd_v.pre.sham"
-# [19] "sd_v.dpost.sham"            "t0.pre.anodal"
-# [21] "t0.dpost.anodal"            "t0.pre.cathodal"
-# [23] "t0.dpost.cathodal"          "t0.pre.sham"
-# [25] "t0.dpost.sham"
+# [1] "A"                    "B.pre"                "B.anodal"             "B.cathodal"           "B.sham"
+# [6] "mean_v.pre.true"      "mean_v.anodal.true"   "mean_v.cathodal.true" "mean_v.sham.true"     "sd_v"
+# [11] "t0.pre"               "t0.anodal"            "t0.cathodal"          "t0.sham"
 #
 # Constants are (see attr(,"constants") ):
-#   st0     mean_v.pre.anodal.false
-# 0                           1
-# mean_v.dpost.anodal.false   mean_v.pre.cathodal.false
-# 1                           1
-# mean_v.dpost.cathodal.false       mean_v.pre.sham.false
-# 1                           1
-# mean_v.dpost.sham.false
-# 1
+#   st0      mean_v.pre.false   mean_v.anodal.false mean_v.cathodal.false     mean_v.sham.false
+# 0                     1                     1                     1                     1
 #
 # Model type = norm (posdrift= TRUE )
+
 
 
 data_model <- data.model.dmc(as.data.frame(dmc_data),model)
@@ -89,47 +80,38 @@ data_model <- data.model.dmc(as.data.frame(dmc_data),model)
 #So I've fixed all threshold, mean rate and sd rates to 1.
 
 #subject level priors
-pop.mean <- c(A=1, B.pre.anodal=1, B.dpost.anodal=1,
-              B.pre.cathodal=1, B.dpost.cathodal=1,
-              B.pre.sham=1, B.dpost.sham=1,
-              mean_v.pre.anodal.true=1, mean_v.dpost.anodal.true=1,
-              mean_v.pre.cathodal.true=1, mean_v.dpost.cathodal.true=1,
-              mean_v.pre.sham.true=1, mean_v.dpost.sham.true=1,
-              sd_v.pre.anodal=1, sd_v.dpost.anodal=1,
-              sd_v.pre.cathodal=1, sd_v.dpost.cathodal=1,
-              sd_v.pre.sham=1, sd_v.dpost.sham=1,
-              t0.pre.anodal=.3,t0.dpost.anodal=0.3,
-              t0.pre.cathodal=.3,t0.dpost.cathodal=0.3,
-              t0.pre.sham=.3,t0.dpost.sham=0.3)
+pop.mean <- c(A=1, B.pre=1, B.anodal=1,
+              B.cathodal=1, B.sham=1,
+              mean_v.pre.true=1, mean_v.anodal.true=1,
+              mean_v.cathodal.true=1, mean_v.sham.true=1,
+              sd_v=1,
+              t0.pre=.3,t0.anodal=0.3,
+              t0.cathodal=.3,
+              t0.sham=.3)
 
 #scales are the same as used in tutorial 4.6 (though note that they are initially specified as very small, and then multiplied by 5 on line 82)
-pop.scale <- c(A=5, B.pre.anodal=5, B.dpost.anodal=5,
-              B.pre.cathodal=5, B.dpost.cathodal=5,
-              B.pre.sham=5, B.dpost.sham=5,
-              mean_v.pre.anodal.true=5, mean_v.dpost.anodal.true=5,
-              mean_v.pre.cathodal.true=5, mean_v.dpost.cathodal.true=5,
-              mean_v.pre.sham.true=5, mean_v.dpost.sham.true=5,
-              sd_v.pre.anodal=2, sd_v.dpost.anodal=2,
-              sd_v.pre.cathodal=2, sd_v.dpost.cathodal=2,
-              sd_v.pre.sham=2, sd_v.dpost.sham=2,
-              t0.pre.anodal=.3,t0.dpost.anodal=0.3,
-              t0.pre.cathodal=.3,t0.dpost.cathodal=0.3,
-              t0.pre.sham=.3,t0.dpost.sham=0.3)
+pop.scale <- c(A=20, B.pre=20, B.anodal=20,
+              B.cathodal=20, B.sham=20,
+              mean_v.pre.true=20, mean_v.anodal.true=20,
+              mean_v.cathodal.true=20, mean_v.sham.true=20,
+              sd_v=10,
+              t0.pre=.3,t0.anodal=0.3,
+              t0.cathodal=.3,
+              t0.sham=.3)
 
 p.prior <- prior.p.dmc(
-  dists = rep("tnorm",25),
+  dists = rep("tnorm",14),
   p1=pop.mean,p2=pop.scale,
-  lower=c(0,0,0,0,0,0,0,NA,NA,NA,NA,NA,NA,0,0,0,0,0,0,.05,.05,.05,.05,.05,.05),
-  upper=c(NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,1,1,1,1,1,1)
+  lower=c(0,0,0,0,0,NA,NA,NA,NA,0,.05,.05,.05,.05),
+  upper=c(NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,1,1,1,1)
 )
 
 #population level priors
 mu.prior <- prior.p.dmc(
-  dists = rep("tnorm",25),
-  p1=pop.mean,
-  p2=pop.scale,
-  lower=c(0,0,0,0,0,0,0,NA,NA,NA,NA,NA,NA,0,0,0,0,0,0,.05,.05,.05,.05,.05,.05),
-  upper=c(NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,1,1,1,1,1,1)
+  dists = rep("tnorm",14),
+  p1=pop.mean,p2=pop.scale,
+  lower=c(0,0,0,0,0,NA,NA,NA,NA,0,.05,.05,.05,.05),
+  upper=c(NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,1,1,1,1)
 )
 
 # sigma.prior <- prior.p.dmc(
@@ -148,32 +130,24 @@ mu.prior <- prior.p.dmc(
 
 sigma.prior <- prior.p.dmc(
   dists = rep("tnorm", length(p.prior)),
-  p1=c(A=0, B.pre.anodal=0, B.dpost.anodal=0,
-       B.pre.cathodal=0, B.dpost.cathodal=0,
-       B.pre.sham=0, B.dpost.sham=0,
-       mean_v.pre.anodal.true=0, mean_v.dpost.anodal.true=0,
-       mean_v.pre.cathodal.true=0, mean_v.dpost.cathodal.true=0,
-       mean_v.pre.sham.true=0, mean_v.dpost.sham.true=0,
-       sd_v.pre.anodal=0, sd_v.dpost.anodal=0,
-       sd_v.pre.cathodal=0, sd_v.dpost.cathodal=0,
-       sd_v.pre.sham=0, sd_v.dpost.sham=0,
-       t0.pre.anodal=0,t0.dpost.anodal=0,
-       t0.pre.cathodal=0,t0.dpost.cathodal=0,
-       t0.pre.sham=0,t0.dpost.sham=0),
-  p2=c(A=2, B.pre.anodal=2, B.dpost.anodal=2,
-       B.pre.cathodal=2, B.dpost.cathodal=2,
-       B.pre.sham=2, B.dpost.sham=2,
-       mean_v.pre.anodal.true=2, mean_v.dpost.anodal.true=2,
-       mean_v.pre.cathodal.true=2, mean_v.dpost.cathodal.true=2,
-       mean_v.pre.sham.true=2, mean_v.dpost.sham.true=2,
-       sd_v.pre.anodal=1, sd_v.dpost.anodal=1,
-       sd_v.pre.cathodal=1, sd_v.dpost.cathodal=1,
-       sd_v.pre.sham=1, sd_v.dpost.sham=1,
-       t0.pre.anodal=1,t0.dpost.anodal=1,
-       t0.pre.cathodal=1,t0.dpost.cathodal=1,
-       t0.pre.sham=1,t0.dpost.sham=1),
-  lower=rep(0,25),
-  upper=rep(NA,25)
+  p1=c(A=0, B.pre=0, B.anodal=0,
+       B.cathodal=0, B.sham=0,
+       mean_v.pre.true=0, mean_v.anodal.true=0,
+       mean_v.cathodal.true=0, mean_v.sham.true=0,
+       sd_v=0,
+       t0.pre=.3,t0.anodal=0.3,
+       t0.cathodal=.3,
+       t0.sham=.3),
+  p2=c(A=10, B.pre=10, B.anodal=10,
+       B.cathodal=10, B.sham=10,
+       mean_v.pre.true=10, mean_v.anodal.true=10,
+       mean_v.cathodal.true=10, mean_v.sham.true=10,
+       sd_v=10,
+       t0.pre=1,t0.anodal=1,
+       t0.cathodal=1,
+       t0.sham=1),
+  lower=rep(0,14),
+  upper=rep(NA,14)
 )
 
 
@@ -186,18 +160,15 @@ pp.prior <- list(mu.prior, sigma.prior)
 # ------------------------------------------------
 # Get starting values
 
-# starting_samples <- h.samples.dmc(nmc = 100, p.prior,data_model,pp.prior, thin = 10)
-#
-# unstuck_samples <- h.run.unstuck.dmc(starting_samples, p.migrate = .05,h.p.migrate=.05, cores = 24)
-#
-# final_samples <- h.run.converge.dmc(h.samples.dmc(nmc=100, samples=unstuck_samples,thin=10), nmc=100,cores=24,finalrun=T,finalI=500)
-# save(final_samples, file = "data/derived/dmc_final_samples_hierarchical_wide_priors.RData")
+starting_samples <- h.samples.dmc(nmc = 100, p.prior,data_model,pp.prior, thin = 10)
 
-load("data/derived/dmc_final_samples_hierarchical_wide_priors.RData")
+unstuck_samples <- h.run.unstuck.dmc(starting_samples, p.migrate = .05,h.p.migrate=.05, cores = 24)
 
-final_samples2 <- h.run.dmc(h.samples.dmc(nmc=500, samples=final_samples,thin=10),cores=24)
+final_samples <- h.run.converge.dmc(h.samples.dmc(nmc=100, samples=unstuck_samples,thin=10), nmc=100,cores=24,finalrun=T,finalI=1000)
 
-save(final_samples2, file = "data/derived/dmc_final_samples2_hierarchical_wide_priors.RData")
+save(final_samples, file = "data/derived/dmc_final_samples_hierarchical_super_wide_priors_constrained.RData")
+
+
 
 #load(file = "data/derived/dmc_final_samples2_hierarchical_wide_priors.RData")
 
@@ -205,20 +176,20 @@ save(final_samples2, file = "data/derived/dmc_final_samples2_hierarchical_wide_p
 #             CONVERGENCE                #
 #----------------------------------------#
 
-gelman.diag.dmc(final_samples2)
+gelman.diag.dmc(final_samples)
 
-effectiveSize.dmc(final_samples2)
+effectiveSize.dmc(final_samples)
 
 #most are well above 1000
 
-#plot.dmc(final_samples,hyper=T,start=401)
+#plot.dmc(final_samples2,hyper=T)
 
 #-------------------------------------------------#
 #             POSTERIOR PREDITIVES                #
 #-------------------------------------------------#
 
 
-pp=h.post.predict.dmc(samples=final_samples2,save.simulation=T,cores=7,censor=c(0,2))
+pp=h.post.predict.dmc(samples=final_samples,save.simulation=T,cores=7,censor=c(0,2))
 
 sim = do.call(rbind, pp) %>%
   mutate(prev_reps = lag(reps),
@@ -233,11 +204,11 @@ sim_acc = sim %>%
   #mutate(s = rownames(sim),
  #        s = gsub("\\..*","",s)) %>%
   mutate(correct = as.numeric(S == tolower(R))) %>%
-  group_by(subject,time,session,reps) %>%
+  group_by(subject,condition,reps) %>%
   mutate(accuracy = mean(correct)) %>%
-  group_by(time,session,reps) %>%
+  group_by(condition,reps) %>%
   summarise(mean_accuracy = mean(accuracy)) %>%
-  group_by(time,session) %>%
+  group_by(condition) %>%
   summarise(prop_m = mean(mean_accuracy),
             prop_l = quantile(mean_accuracy,0.025),
             prop_u = quantile(mean_accuracy,0.975),
@@ -249,9 +220,9 @@ data_acc = data %>%
   #mutate(s = rownames(data),
   #       s = gsub("\\..*","",s)) %>%
   mutate(correct = as.numeric(S == tolower(R))) %>%
-  group_by(subject,time,session) %>%
+  group_by(subject,condition) %>%
   mutate(accuracy = mean(correct)) %>%
-  group_by(time,session) %>%
+  group_by(condition) %>%
   summarise(prop_m = mean(accuracy),
             prop_l = NA,#prop_m - sd(prop)/sqrt(n()),
             prop_u = NA,#prop_m + sd(prop)/sqrt(n()),
@@ -259,23 +230,24 @@ data_acc = data %>%
 
 pp_acc =  bind_rows(data_acc,sim_acc) %>%
   ungroup() %>%
-  mutate(Time = factor(time,levels=c('pre','dpost'),labels=c('Pre','Delayed Post')),
-       Session = factor(session,levels=c('anodal','cathodal','sham'),labels=c('Anodal','Cathodal','Sham'))) %>%
-  ggplot(aes(x=Time,y=prop_m,group=source,colour=source)) +
+  mutate(#Time = factor(time,levels=c('pre','dpost'),labels=c('Pre','Delayed Post')),
+         #Session = factor(session,levels=c('anodal','cathodal','sham'),labels=c('Anodal','Cathodal','Sham'))
+         Condition = factor(condition,levels=c('pre','anodal','cathodal','sham'),labels=c('Baseline','Anodal','Cathodal','Sham'))) %>%
+  ggplot(aes(x=Condition,y=prop_m,group=source,colour=source)) +
   geom_errorbar(aes(ymax = prop_u, ymin = prop_l), width= 0.2) +
   geom_point(pch=21, size=2) +
   geom_line(aes(group=source)) +
   ylab("Proportion Correct") + xlab('Time') +
-  scale_y_continuous(breaks = seq(0.5,1,0.1),limits = c(0.5,1)) +
-  facet_grid(.~Session)
+  scale_y_continuous(breaks = seq(0.5,1,0.1),limits = c(0.5,1))# +
+  #facet_grid(.~Session)
 
-ggsave("figures/fits_acc.pdf",pp_acc,height=5,width=6)
+ggsave("figures/fits_acc_super_wide_constrained.pdf",pp_acc,height=5,width=6)
 
 ### Response Time ###
 
 sim_rt = sim %>%
   mutate(correct = as.numeric(S == tolower(R))) %>%
-  group_by(subject,time,session,reps,correct) %>%
+  group_by(subject,condition,reps,correct) %>%
   #count number of responses of each type in each condition
   mutate(count = n()) %>%
   #filter out responses that were made less than 5 times
@@ -288,10 +260,10 @@ sim_rt = sim %>%
             q90 = quantile(RT,.9)) %>%
   gather(key=quantile,value=RT,q10:q90) %>%
   #average across subjects
-  group_by(time,session,correct,quantile,reps) %>%
+  group_by(condition,correct,quantile,reps) %>%
   summarise(RT = mean(RT)) %>%
   #get CIs
-  group_by(time,session,correct,quantile) %>%
+  group_by(condition,correct,quantile) %>%
   summarise(RT_m = mean(RT),
             RT_l = quantile(RT,0.025),
             RT_u = quantile(RT,0.975),
@@ -299,7 +271,7 @@ sim_rt = sim %>%
 
 data_rt = data %>%
   mutate(correct = as.numeric(S == tolower(R))) %>%
-  group_by(subject,time,session,correct) %>%
+  group_by(subject,condition,correct) %>%
   #count number of responses of each type in each condition
   mutate(count = n()) %>%
   #filter out responses that were made less than 5 times
@@ -312,7 +284,7 @@ data_rt = data %>%
             q90 = quantile(RT,.9)) %>%
   gather(key=quantile,value=RT,q10:q90) %>%
   #average across subjects
-  group_by(time,session,correct,quantile) %>%
+  group_by(condition,correct,quantile) %>%
   summarise(RT_m = mean(RT),
             RT_l = NA, #RT_m - sd(RT)/sqrt(n()),
             RT_u = NA, #RT_m + sd(RT)/sqrt(n()),
@@ -321,32 +293,33 @@ data_rt = data %>%
 pp_rt =  bind_rows(data_rt,sim_rt) %>%
   ungroup() %>%
   mutate(Correct = factor(correct,levels=c(1,0),labels=c('Correct','Incorrect')),
-         Time = factor(time,levels=c('pre','dpost'),labels=c('Pre','Delayed Post')),
-         Session = factor(session,levels=c('anodal','cathodal','sham'),labels=c('Anodal','Cathodal','Sham'))) %>%
-  ggplot(aes(x=Time,y=RT_m*1000,group=quantile,colour=source)) +
+         #Time = factor(time,levels=c('pre','dpost'),labels=c('Pre','Delayed Post')),
+         #Session = factor(session,levels=c('anodal','cathodal','sham'),labels=c('Anodal','Cathodal','Sham')),
+         Condition = factor(condition,levels=c('pre','anodal','cathodal','sham'),labels=c('Baseline','Anodal','Cathodal','Sham'))) %>%
+  ggplot(aes(x=Condition,y=RT_m*1000,group=quantile,colour=source)) +
     geom_errorbar(aes(ymax = RT_u*1000, ymin = RT_l*1000), width= 0.2) +
     geom_point(pch=21, size=2) +
     geom_line(aes(group=interaction(quantile,source))) +
     ylab("Response Time (ms)") + xlab('Time') +
     scale_y_continuous(breaks = seq(500,2000,500),limits = c(250,2000)) +
-    facet_grid(Correct~Session) #+ theme_minimal()
+    facet_grid(.~Correct) #+ theme_minimal()
 
-ggsave("figures/fits_rt.pdf",pp_rt,height=5,width=6)
+ggsave("figures/fits_rt_super_wide_constrained.pdf",pp_rt,height=5,width=6)
 
 #-------------------------------------------------#
 #             PARAMATER VALUES                    #
 #-------------------------------------------------#
 
-smry = summary.dmc(final_samples,start=400,hyper=T)
+#smry = summary.dmc(final_samples,hyper=T)
 
 
-smry = summary.dmc(final_samples,start=400)
+smry = summary.dmc(final_samples)
 
 mean_parms = t(sapply(lapply(smry, '[[', 1), function (x) x[,'Mean']))
 mean_parms = as.data.frame(round(mean_parms,3))
 mean_parms$subject = rownames(mean_parms)
 
-write_csv(mean_parms,"data/clean/mean_parameters.csv")
+write_csv(mean_parms,"data/clean/mean_parameters_super_wide_constrained.csv")
 
 
 # #
