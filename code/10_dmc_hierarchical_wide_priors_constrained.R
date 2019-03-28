@@ -4,7 +4,7 @@ library(tidyverse)
 setwd("~/stim_ids")
 
 source ("dmc/dmc.R")
-load_model ("LBA","lba_B.R")
+load_model ("LBA","lba_B2v.R")
 
 #load data
 load(file="data/clean/trimmed_data.RData")
@@ -46,11 +46,11 @@ dmc_data = trimmed_data %>%
 #------------------
 
 
-model <- model.dmc(p.map=list(A="1",B=c("condition"),mean_v=c("condition","M"),sd_v="1",t0=c("condition"), st0="1"),
+model <- model.dmc(p.map=list(A="1",B=c("condition"),mean_v=c("condition","M"),mean_v_false="1",sd_v="1",t0=c("condition"), st0="1"),
    match.map=list(M=list(aa="AA",bb="BB",cc="CC",dd="DD",ee="EE",ff="FF")),
    factors=list(S=c("aa","bb","cc","dd","ee","ff"),condition=c('pre','anodal','cathodal','sham')),
-   constants=c(st0=0, mean_v.pre.false = 1,mean_v.anodal.false = 1,
-                  mean_v.cathodal.false = 1,mean_v.sham.false = 1),
+   constants=c(st0=0, mean_v.pre.false = Inf,mean_v.anodal.false = Inf,
+                  mean_v.cathodal.false = Inf,mean_v.sham.false = Inf,sd_v = 1),
    responses=c(aa="AA",bb="BB",cc="CC",dd="DD",ee="EE",ff="FF"),
    type="norm")
 
@@ -84,7 +84,7 @@ pop.mean <- c(A=1, B.pre=1, B.anodal=1,
               B.cathodal=1, B.sham=1,
               mean_v.pre.true=1, mean_v.anodal.true=1,
               mean_v.cathodal.true=1, mean_v.sham.true=1,
-              sd_v=1,
+              mean_v_false=1,
               t0.pre=.3,t0.anodal=0.3,
               t0.cathodal=.3,
               t0.sham=.3)
@@ -94,7 +94,7 @@ pop.scale <- c(A=5, B.pre=5, B.anodal=5,
               B.cathodal=5, B.sham=5,
               mean_v.pre.true=5, mean_v.anodal.true=5,
               mean_v.cathodal.true=5, mean_v.sham.true=5,
-              sd_v=2,
+              mean_v_false=5,
               t0.pre=.3,t0.anodal=0.3,
               t0.cathodal=.3,
               t0.sham=.3)
@@ -102,7 +102,7 @@ pop.scale <- c(A=5, B.pre=5, B.anodal=5,
 p.prior <- prior.p.dmc(
   dists = rep("tnorm",14),
   p1=pop.mean,p2=pop.scale,
-  lower=c(0,0,0,0,0,NA,NA,NA,NA,0,.05,.05,.05,.05),
+  lower=c(0,0,0,0,0,NA,NA,NA,NA,NA,.05,.05,.05,.05),
   upper=c(NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,1,1,1,1)
 )
 
@@ -110,7 +110,7 @@ p.prior <- prior.p.dmc(
 mu.prior <- prior.p.dmc(
   dists = rep("tnorm",14),
   p1=pop.mean,p2=pop.scale,
-  lower=c(0,0,0,0,0,NA,NA,NA,NA,0,.05,.05,.05,.05),
+  lower=c(0,0,0,0,0,NA,NA,NA,NA,NA,.05,.05,.05,.05),
   upper=c(NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,1,1,1,1)
 )
 
@@ -134,7 +134,7 @@ sigma.prior <- prior.p.dmc(
        B.cathodal=0, B.sham=0,
        mean_v.pre.true=0, mean_v.anodal.true=0,
        mean_v.cathodal.true=0, mean_v.sham.true=0,
-       sd_v=0,
+       mean_v_false=0,
        t0.pre=.3,t0.anodal=0.3,
        t0.cathodal=.3,
        t0.sham=.3),
@@ -142,7 +142,7 @@ sigma.prior <- prior.p.dmc(
        B.cathodal=2, B.sham=2,
        mean_v.pre.true=2, mean_v.anodal.true=2,
        mean_v.cathodal.true=2, mean_v.sham.true=2,
-       sd_v=1,
+       mean_v_false=2,
        t0.pre=1,t0.anodal=1,
        t0.cathodal=1,
        t0.sham=1),
@@ -168,6 +168,7 @@ final_samples <- h.run.converge.dmc(h.samples.dmc(nmc=100, samples=unstuck_sampl
 
 save(final_samples, file = "data/derived/dmc_final_samples_hierarchical_wide_priors_constrained.RData")
 
+load(file = "data/derived/dmc_final_samples_hierarchical_wide_priors_constrained.RData")
 
 
 #load(file = "data/derived/dmc_final_samples2_hierarchical_wide_priors.RData")

@@ -4,7 +4,7 @@ library(tidyverse)
 setwd("~/stim_ids")
 
 source ("dmc/dmc.R")
-load_model ("LBA","lba_B.R")
+load_model ("LBA","lba_B2v.R")
 
 #load data
 load(file="data/clean/trimmed_data.RData")
@@ -46,13 +46,13 @@ dmc_data = trimmed_data %>%
 #------------------
 
 
-model <- model.dmc(p.map=list(A="1",B=c("condition"),mean_v=c("condition","M"),sd_v="1",t0=c("condition"), st0="1"),
-   match.map=list(M=list(aa="AA",bb="BB",cc="CC",dd="DD",ee="EE",ff="FF")),
-   factors=list(S=c("aa","bb","cc","dd","ee","ff"),condition=c('pre','anodal','cathodal','sham')),
-   constants=c(st0=0, mean_v.pre.false = 1,mean_v.anodal.false = 1,
-                  mean_v.cathodal.false = 1,mean_v.sham.false = 1),
-   responses=c(aa="AA",bb="BB",cc="CC",dd="DD",ee="EE",ff="FF"),
-   type="norm")
+model <- model.dmc(p.map=list(A="1",B=c("condition"),mean_v=c("condition","M"),mean_v_false="1",sd_v="1",t0=c("condition"), st0="1"),
+                   match.map=list(M=list(aa="AA",bb="BB",cc="CC",dd="DD",ee="EE",ff="FF")),
+                   factors=list(S=c("aa","bb","cc","dd","ee","ff"),condition=c('pre','anodal','cathodal','sham')),
+                   constants=c(st0=0, mean_v.pre.false = Inf,mean_v.anodal.false = Inf,
+                               mean_v.cathodal.false = Inf,mean_v.sham.false = Inf,sd_v = 1),
+                   responses=c(aa="AA",bb="BB",cc="CC",dd="DD",ee="EE",ff="FF"),
+                   type="norm")
 
 # Parameter vector names are: ( see attr(,"p.vector") )
 # [1] "A"                    "B.pre"                "B.anodal"             "B.cathodal"           "B.sham"
@@ -84,7 +84,7 @@ pop.mean <- c(A=1, B.pre=1, B.anodal=1,
               B.cathodal=1, B.sham=1,
               mean_v.pre.true=1, mean_v.anodal.true=1,
               mean_v.cathodal.true=1, mean_v.sham.true=1,
-              sd_v=1,
+              mean_v_false=1,
               t0.pre=.3,t0.anodal=0.3,
               t0.cathodal=.3,
               t0.sham=.3)
@@ -94,7 +94,7 @@ pop.scale <- c(A=20, B.pre=20, B.anodal=20,
               B.cathodal=20, B.sham=20,
               mean_v.pre.true=20, mean_v.anodal.true=20,
               mean_v.cathodal.true=20, mean_v.sham.true=20,
-              sd_v=10,
+              mean_v_false=20,
               t0.pre=.3,t0.anodal=0.3,
               t0.cathodal=.3,
               t0.sham=.3)
@@ -102,7 +102,7 @@ pop.scale <- c(A=20, B.pre=20, B.anodal=20,
 p.prior <- prior.p.dmc(
   dists = rep("tnorm",14),
   p1=pop.mean,p2=pop.scale,
-  lower=c(0,0,0,0,0,NA,NA,NA,NA,0,.05,.05,.05,.05),
+  lower=c(0,0,0,0,0,NA,NA,NA,NA,NA,.05,.05,.05,.05),
   upper=c(NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,1,1,1,1)
 )
 
@@ -110,7 +110,7 @@ p.prior <- prior.p.dmc(
 mu.prior <- prior.p.dmc(
   dists = rep("tnorm",14),
   p1=pop.mean,p2=pop.scale,
-  lower=c(0,0,0,0,0,NA,NA,NA,NA,0,.05,.05,.05,.05),
+  lower=c(0,0,0,0,0,NA,NA,NA,NA,NA,.05,.05,.05,.05),
   upper=c(NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,1,1,1,1)
 )
 
@@ -134,7 +134,7 @@ sigma.prior <- prior.p.dmc(
        B.cathodal=0, B.sham=0,
        mean_v.pre.true=0, mean_v.anodal.true=0,
        mean_v.cathodal.true=0, mean_v.sham.true=0,
-       sd_v=0,
+       mean_v_false=0,
        t0.pre=.3,t0.anodal=0.3,
        t0.cathodal=.3,
        t0.sham=.3),
@@ -142,7 +142,7 @@ sigma.prior <- prior.p.dmc(
        B.cathodal=10, B.sham=10,
        mean_v.pre.true=10, mean_v.anodal.true=10,
        mean_v.cathodal.true=10, mean_v.sham.true=10,
-       sd_v=10,
+       mean_v_false=10,
        t0.pre=1,t0.anodal=1,
        t0.cathodal=1,
        t0.sham=1),
